@@ -409,9 +409,11 @@ else:
     d_start, d_end = date_min, date_max
 
 with fc2:
-    picked_seller = st.selectbox(
+    picked_sellers = st.multiselect(
         "Seller type",
-        options=["(All sellers)"] + seller_types_list,
+        options=seller_types_list,
+        default=[],
+        placeholder="All sellers",
         key="seller_pick",
     )
 
@@ -451,12 +453,16 @@ if df.empty:
     st.stop()
 
 # ── Apply seller filter ──────────────────────────────────────────
-if picked_seller == "(All sellers)":
+if not picked_sellers:
     seller_df = df
     seller_label = "All Sellers"
 else:
-    seller_df = df[df["seller_type"] == picked_seller]
-    seller_label = picked_seller
+    seller_df = df[df["seller_type"].isin(picked_sellers)]
+    seller_label = (
+        ", ".join(picked_sellers)
+        if len(picked_sellers) <= 3
+        else f"{len(picked_sellers)} sellers"
+    )
 
 if seller_df.empty:
     st.warning(f"No data for seller type **{seller_label}** in selected filters.")
@@ -682,10 +688,11 @@ st.dataframe(
     use_container_width=True, hide_index=True, height=500,
 )
 
+safe_seller_label = re.sub(r"[^A-Za-z0-9._-]+", "_", seller_label).strip("_") or "all_sellers"
 st.download_button(
     f"Download {trend_view.lower()} trend CSV",
     trend_tbl.to_csv(index=False).encode("utf-8"),
-    file_name=f"{trend_view.lower()}_trend_{seller_label}.csv",
+    file_name=f"{trend_view.lower()}_trend_{safe_seller_label}.csv",
     mime="text/csv",
     key="dl_trend",
 )
