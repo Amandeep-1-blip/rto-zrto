@@ -53,7 +53,7 @@ browser:
 # GitHub push
 # ---------------------------------------------------------------------------
 github:
-  enabled: false
+  enabled: true
   repo_path: "."
   commit_message: "chore: update RTO data {date}"
   branch: "main"
